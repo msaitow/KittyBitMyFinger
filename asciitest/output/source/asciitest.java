@@ -1,0 +1,185 @@
+import processing.core.*; 
+import processing.data.*; 
+import processing.event.*; 
+import processing.opengl.*; 
+
+import processing.video.*; 
+import processing.opengl.*; 
+
+import java.util.HashMap; 
+import java.util.ArrayList; 
+import java.io.File; 
+import java.io.BufferedReader; 
+import java.io.PrintWriter; 
+import java.io.InputStream; 
+import java.io.OutputStream; 
+import java.io.IOException; 
+
+public class asciitest extends PApplet {
+
+/**
+ * ASCII Video
+ * by Ben Fry. 
+ * 
+ * Text characters have been used to represent images since the earliest computers.
+ * This sketch is a simple homage that re-interprets live video as ASCII text.
+ * See the keyPressed function for more options, like changing the font size.
+ */
+
+
+
+
+Capture video;
+boolean cheatScreen;
+
+// All ASCII characters, sorted according to their visual density
+String letterOrder =
+  " .`-_':,;^=+/\"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLu" +
+  "nT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q";
+char[] letters;
+
+float[] bright;
+char[] chars;
+
+PFont font;
+float fontSize = 1.3f;
+
+
+public void setup() {
+  size(900, 680, P2D);
+  //size(900, 680);    
+  // Or run full screen, more fun! Use with Sketch -> Present
+  //size(screen.width, screen.height, OPENGL);
+
+  String[] cameras = Capture.list();
+  
+  println("DEVICE resolution");
+  for (int i = 0; i < cameras.length; i++) {
+    println("" + i + "," + cameras[i]);
+  }
+  println("The highest resolution is used..");
+  //cam = new Capture(this, cameras[0]);
+  println("device start");
+  
+  // Uses the default video input, see the reference if this causes an error
+  //video = new Capture(this, cameras[0]);
+  video = new Capture(this, 80, 60, 15);  
+  int count = video.width * video.height;
+  video.start();
+  
+  font = loadFont("UniversLTStd-Light-48.vlw");
+
+  // for the 256 levels of brightness, distribute the letters across
+  // the an array of 256 elements to use for the lookup
+  letters = new char[256];
+  for (int i = 0; i < 256; i++) {
+    int index = PApplet.parseInt(map(i, 0, 256, 0, letterOrder.length()));
+    letters[i] = letterOrder.charAt(index);
+  }
+
+  // current characters for each position in the video
+  chars = new char[count];
+
+  // current brightness for each point
+  bright = new float[count];
+  println(" count=" + count);
+  println(" video.width=" + video.width);
+  println(" video.height=" + video.height);    
+  for (int i = 0; i < count; i++) {
+    // set each brightness at the midpoint to start
+    bright[i] = 128;
+    //bright[i] = 200;
+    //bright[i] = 0;    
+  }
+}
+
+
+public void captureEvent(Capture c) {
+  c.read();
+}
+
+public void draw() {
+  
+  background(0);
+
+  pushMatrix();
+
+  float hgap = width / PApplet.parseFloat(video.width);
+  float vgap = height / PApplet.parseFloat(video.height);
+
+  scale(max(hgap, vgap) * fontSize);
+  textFont(font, fontSize);
+
+  int index = 0;
+  for (int y = 1; y < video.height; y++) {
+
+    // Move down for next line
+    translate(0,  1.0f / fontSize);
+
+    pushMatrix();
+    for (int x = 0; x < video.width; x++) {
+      int pixelColor = video.pixels[index];
+      // Faster method of calculating r, g, b than red(), green(), blue() 
+      int r = (pixelColor >> 16) & 0xff;
+      int g = (pixelColor >> 8) & 0xff;
+      int b = pixelColor & 0xff;
+
+      // Another option would be to properly calculate brightness as luminance:
+      // luminance = 0.3*red + 0.59*green + 0.11*blue
+      // Or you could instead red + green + blue, and make the the values[] array
+      // 256*3 elements long instead of just 256.
+      int pixelBright = max(r, g, b);
+
+      // The 0.1 value is used to damp the changes so that letters flicker less
+      //println(" index=" + index);      
+      float diff = pixelBright - bright[index];
+      bright[index] += diff * 0.1f;
+
+      fill(pixelColor);
+      int num = PApplet.parseInt(bright[index]);
+      text(letters[num], 0, 0);
+      
+      // Move to the next pixel
+      index++;
+
+      // Move over for next character
+      translate(1.0f / fontSize, 0);
+    }
+    popMatrix();
+  }
+  println("..End");
+  popMatrix();
+
+  if (cheatScreen) {
+    //image(video, 0, height - video.height);
+    // set() is faster than image() when drawing untransformed images
+    //set(0, 0, video);
+    set(0, height - video.height, video);    
+  }
+}
+
+
+/**
+ * Handle key presses:
+ * 'c' toggles the cheat screen that shows the original image in the corner
+ * 'g' grabs an image and saves the frame to a tiff image
+ * 'f' and 'F' increase and decrease the font size
+ */
+public void keyPressed() {
+  switch (key) {
+  case 'g': saveFrame(); break;
+  case 'c': cheatScreen = !cheatScreen; break;
+  case 'f': fontSize *= 1.1f; break;
+  case 'F': fontSize *= 0.9f; break;
+  case 'X': cheatScreen = true;
+  }
+}
+  static public void main(String[] passedArgs) {
+    String[] appletArgs = new String[] { "asciitest" };
+    if (passedArgs != null) {
+      PApplet.main(concat(appletArgs, passedArgs));
+    } else {
+      PApplet.main(appletArgs);
+    }
+  }
+}
