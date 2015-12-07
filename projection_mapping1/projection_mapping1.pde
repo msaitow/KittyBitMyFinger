@@ -9,9 +9,12 @@ int   selected = -1;  // 選択されている頂点
 int   pos[][] = {{0,0},{400,0},{400,300},{0,300}}; // 頂点座標
 
 void setup() {
-  size( 1024, 768, P2D);              // 画面サイズ（適宜調整）
+  //size( 1024, 768, P2D);              // 画面サイズ（適宜調整）
+  size(displayWidth, displayHeight, P2D);              // 画面サイズ（適宜調整）  
   mov = new Movie(this,"street.mov");  // 動画ファイルの読み込み
   mov.loop();                         // 動画ループ再生
+  println("screen.width="  + displayWidth);
+  println("screen.height=" + displayHeight);  
 }
 
 void draw() {

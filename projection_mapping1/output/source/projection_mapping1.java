@@ -18,6 +18,9 @@ import java.io.IOException;
 public class projection_mapping1 extends PApplet {
 
 
+// Take from http://d.hatena.ne.jp/kougaku-navi/20120109/p1
+
+
 
 
 Movie mov;            // \u52d5\u753b
@@ -25,9 +28,12 @@ int   selected = -1;  // \u9078\u629e\u3055\u308c\u3066\u3044\u308b\u9802\u70b9
 int   pos[][] = {{0,0},{400,0},{400,300},{0,300}}; // \u9802\u70b9\u5ea7\u6a19
 
 public void setup() {
-  size( 1024, 768, P2D);              // \u753b\u9762\u30b5\u30a4\u30ba\uff08\u9069\u5b9c\u8abf\u6574\uff09
+  //size( 1024, 768, P2D);              // \u753b\u9762\u30b5\u30a4\u30ba\uff08\u9069\u5b9c\u8abf\u6574\uff09
+  size(displayWidth, displayHeight, P2D);              // \u753b\u9762\u30b5\u30a4\u30ba\uff08\u9069\u5b9c\u8abf\u6574\uff09  
   mov = new Movie(this,"street.mov");  // \u52d5\u753b\u30d5\u30a1\u30a4\u30eb\u306e\u8aad\u307f\u8fbc\u307f
   mov.loop();                         // \u52d5\u753b\u30eb\u30fc\u30d7\u518d\u751f
+  println("screen.width="  + displayWidth);
+  println("screen.height=" + displayHeight);  
 }
 
 public void draw() {
@@ -64,7 +70,7 @@ public void draw() {
   }
 }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "projection_mapping1" };
+    String[] appletArgs = new String[] { "--full-screen", "--bgcolor=#666666", "--stop-color=#cccccc", "projection_mapping1" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
