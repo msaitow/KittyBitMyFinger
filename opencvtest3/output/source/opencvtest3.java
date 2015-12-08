@@ -135,8 +135,9 @@ public void draw() {
   }
   text("Frame Rate: " + round(frameRate), 500, 50);
 }
+
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "opencvtest3" };
+    String[] appletArgs = new String[] { "--full-screen", "--bgcolor=#666666", "--stop-color=#cccccc", "opencvtest3" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {

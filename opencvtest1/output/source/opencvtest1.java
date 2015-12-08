@@ -55,7 +55,7 @@ public void movieEvent(Movie m) {
   m.read();
 }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "opencvtest1" };
+    String[] appletArgs = new String[] { "--full-screen", "--bgcolor=#666666", "--stop-color=#cccccc", "opencvtest1" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
