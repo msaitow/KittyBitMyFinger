@@ -38,9 +38,9 @@ void draw() {
   scale(2);
   opencv.loadImage(video);
 
-  background(0); // Make background black so that the rect looks like it's moving
+  //background(0); // Make background black so that the rect looks like it's moving
   //background(255); // Make background white so that the rect looks like it's moving    
-  //image(video, 0, 0 ); // Every time the image from the vide is set as background
+  image(video, 0, 0 ); // Every time the image from the vide is set as background
 
   //fill(0); // Makes the face black
   //fill(255); // Makes the face white
