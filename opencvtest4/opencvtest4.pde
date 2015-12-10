@@ -9,6 +9,7 @@ Sphere[] spheres;
 int numSpheres = 30;
 
 Rectangle[] faces;
+PImage miku;
 
 void setup() {
   
@@ -17,6 +18,9 @@ void setup() {
   opencv = new OpenCV(this, width/2, height/2);
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);  
 
+  miku = loadImage("miku1.jpeg");  
+  //test image(miku, width/4, height/4);
+  
   video.start();
 
   spheres = new Sphere[numSpheres];
@@ -31,6 +35,7 @@ void setup() {
     float diam = random(5);
     spheres[i] = new Sphere(loc, vel, acc, diam);
   }
+  frameRate(50);
   noStroke();
 }
 
@@ -73,6 +78,7 @@ void captureEvent(Capture c) {
 }
 
 float g_const = 9.80665 * 1e-2; // Gravity acceleration in earth in m/s^2
+//float g_const = 2; // Gravity acceleration in earth in m/s^2
 PVector acc_g = new PVector(0, g_const);
 
 class Sphere{
@@ -101,40 +107,100 @@ class Sphere{
       int y1 = faces[i].y;
       int y2 = faces[i].y + faces[i].height;
 
-      if(loc.x >= x1 && loc.x <= x2 && loc.y >= y1 && loc.y <= y2){
-        float d_x1  = abs(x1-loc.x);
-        float d_x2  = abs(x2-loc.x);
-        float d_y1  = abs(y1-loc.y);
-        float d_y2  = abs(y2-loc.y);        
-        float d_min = min(min(d_x1,d_x2),min(d_y1,d_y2));
-        if(d_min == d_x1 || d_min == d_x2) vel.x = -vel.x;
-        if(d_min == d_y1 || d_min == d_y2) vel.y = -vel.y;        
-        //if(loc.y >= y1 && loc.y <= y2) vel.y = -vel.y;      
-        //rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
-      }
-    }
+//      if(loc.x >= x1 && loc.x <= x2 && loc.y >= y1 && loc.y <= y2){
+//        float d_x1  = abs(x1-loc.x);
+//        float d_x2  = abs(x2-loc.x);
+//        float d_y1  = abs(y1-loc.y);
+//        float d_y2  = abs(y2-loc.y);        
+//        float d_min = min(min(d_x1,d_x2),min(d_y1,d_y2));
+//        if(d_min == d_x1 || d_min == d_x2) vel.x = -vel.x;
+//        if(d_min == d_y1 || d_min == d_y2) vel.y = -vel.y;        
+//        //if(loc.y >= y1 && loc.y <= y2) vel.y = -vel.y;      
+//        //rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+//      }
+
+      // (1) Bound on x1
+      {
+        double nextx = loc.x + vel.x;
+        // If I pass the x1-line from left to right and otherway around
+        if((loc.x < x1 && nextx >= x1) || (loc.x >= x1 && nextx < x1)) {
+          loc.x = x1;
+          vel.x = -vel.x;
+        }             
+      }//(1)      
+
+      // (2) Bound on y1
+      {
+        double nexty = loc.y + vel.y;
+        // If I pass the y1-line from down to up and otherway around
+        if((loc.y < y1 && nexty >= y1) || (loc.y >= y1 && nexty < y1)) {
+          loc.y = y1;
+          vel.y = -vel.y;
+        }             
+      }//(2)      
+
+      // (3) Bound on x2
+      {
+        double nextx = loc.x + vel.x;
+        // If I pass the x2-line from left to right and otherway around
+        if((loc.x < x2 && nextx >= x2) || (loc.x >= x2 && nextx < x2)) {
+          loc.x = x2;
+          vel.x = -vel.x;
+        }             
+      }//(3)      
+
+      // (4) Bound on y2
+      {
+        double nexty = loc.y + vel.y;
+        // If I pass the y2-line from down to up and otherway around
+        if((loc.y < y2 && nexty >= y2) || (loc.y >= y2 && nexty < y2)) {
+          loc.y = y2;
+          vel.y = -vel.y;
+        }             
+      }//(4)      
+      
+    }//i
     
-    // Am I in the screen?
-    if(loc.x <  width/2 && loc.y <  height/2 && loc.x >= 0 && loc.y >= 0){
+    // (0) Am I in the screen?
+    if((loc.x <  width/2 && loc.y <  height/2) && (loc.x >= 0 && loc.y >= 0)){
       loc.add(vel);
       vel.add(acc);
       vel.add(acc_g); // effect of gravity
     }
-    if(loc.x >= width/2 && loc.y <  height/2 || loc.x <  0 && loc.y >= 0){
-      vel.x = -vel.x;
+    // (1) There's something about x
+    if((loc.x >= width/2 && loc.y <  height/2) || (loc.x <  0 && loc.y >= 0)){
+      if((loc.x >= width/2 && vel.x > 0) || (loc.x <  0 && vel.x <= 0)){
+        if(loc.x >= width/2 && vel.x > 0) loc.x = width/2;
+        else                              loc.x = 0;
+        vel.x = -vel.x;
+      }
       loc.add(vel);
       vel.add(acc);
       vel.add(acc_g); // effect of gravity
     }
-    if(loc.x <  width/2 && loc.y >= height/2 || loc.x >= 0 && loc.y <  0){
-      vel.y = -vel.y;
+    // (2) There's something about y
+    if((loc.x <  width/2 && loc.y >= height/2) || (loc.x >= 0 && loc.y <  0)){      
+      if((loc.y >= height/2 && vel.y > 0) || (loc.y <  0 && vel.y <= 0)){
+        if(loc.y >= height/2 && vel.y > 0) loc.y = height/2;
+        else                               loc.y = 0;
+        vel.y = -vel.y;
+      }
       loc.add(vel);
       vel.add(acc);
       vel.add(acc_g); // effect of gravity
     }
-    if(loc.x >= width/2 && loc.y >= height/2 || loc.x <  0 && loc.y <  0){
-      vel.x = -vel.x;      
-      vel.y = -vel.y;
+    // (3) There's something about both x and y
+    if((loc.x >= width/2 && loc.y >= height/2) || (loc.x <  0 && loc.y <  0)){
+      if((loc.x >= width/2  && vel.x > 0) || (loc.x <  0 && vel.x <= 0)){
+        if(loc.x >= width/2  && vel.x > 0) loc.x = width/2;
+        else                               loc.x = 0;
+        vel.x = -vel.x;
+      }
+      if((loc.y >= height/2 && vel.y > 0) || (loc.y <  0 && vel.y <= 0)){
+        if(loc.y >= height/2 && vel.y > 0) loc.y = height/2;
+        else                               loc.y = 0;
+        vel.y = -vel.y;
+      }
       loc.add(vel);
       vel.add(acc);
       vel.add(acc_g); // effect of gravity
@@ -148,7 +214,8 @@ class Sphere{
     strokeWeight(3); // Make the frame width 3    
     //ellipse(loc.x, loc.y, diameter, diameter);
     ellipse(loc.x, loc.y, 10, 10);
-
+    //image(miku, loc.x, loc.y);
+    
     // Did I hit the face?
     for (int i = 0; i < faces.length; ++i) {
       ellipse(faces[i].x               , faces[i].y                , 5, 5);            
